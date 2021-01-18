@@ -16,6 +16,7 @@ class BaseData:
     """
     Any data object needs a gateway_name as source
     and should inherit base data.
+    任何数据对象都需要gateway_name作为字段，并且应该继承BaseData
     """
 
     gateway_name: str
@@ -28,6 +29,11 @@ class TickData(BaseData):
         * last trade in market
         * orderbook snapshot
         * intraday market statistics.
+
+        报价数据包含有关以下信息：
+         *市场最后交易
+         *订单快照
+         *盘中市场统计。
     """
 
     symbol: str
@@ -80,6 +86,7 @@ class TickData(BaseData):
 class BarData(BaseData):
     """
     Candlestick bar data of a certain trading period.
+    某一时段的K线价格变化数据。
     """
 
     symbol: str
@@ -104,6 +111,7 @@ class OrderData(BaseData):
     """
     Order data contains information for tracking lastest status
     of a specific order.
+    订单数据包含用于跟踪特定订单的最新状态的信息。
     """
 
     symbol: str
@@ -149,6 +157,7 @@ class TradeData(BaseData):
     """
     Trade data contains information of a fill of an order. One order
     can have several trade fills.
+    交易数据包含订单的信息。 一个订单可以有多个交易填充。
     """
 
     symbol: str
@@ -173,6 +182,7 @@ class TradeData(BaseData):
 class PositionData(BaseData):
     """
     Positon data is used for tracking each individual position holding.
+    持仓数据用于跟踪每个单独的持仓。
     """
 
     symbol: str
@@ -196,6 +206,7 @@ class AccountData(BaseData):
     """
     Account data contains information about balance, frozen and
     available.
+    账户数据包含余额、冻结和是否可用信息。
     """
 
     accountid: str
@@ -213,6 +224,7 @@ class AccountData(BaseData):
 class LogData(BaseData):
     """
     Log data is used for recording log messages on GUI or in log files.
+    日志数据用于在GUI或日志文件中记录日志消息。
     """
 
     msg: str
@@ -227,6 +239,7 @@ class LogData(BaseData):
 class ContractData(BaseData):
     """
     Contract data contains basic information about each contract traded.
+    合约数据包含有关每个交易合约的基本信息。
     """
 
     symbol: str
@@ -257,6 +270,7 @@ class ContractData(BaseData):
 class SubscribeRequest:
     """
     Request sending to specific gateway for subscribing tick data update.
+    请求发送到特定网关以订阅报价数据更新。
     """
 
     symbol: str
@@ -271,6 +285,7 @@ class SubscribeRequest:
 class OrderRequest:
     """
     Request sending to specific gateway for creating a new order.
+    请求发送到特定网关以创建新订单。
     """
 
     symbol: str
@@ -309,6 +324,7 @@ class OrderRequest:
 class CancelRequest:
     """
     Request sending to specific gateway for canceling an existing order.
+    请求发送到特定网关以取消现有订单。
     """
 
     orderid: str
@@ -324,6 +340,7 @@ class CancelRequest:
 class HistoryRequest:
     """
     Request sending to specific gateway for querying history data.
+    请求发送到特定网关以查询历史数据。
     """
 
     symbol: str

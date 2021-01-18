@@ -72,6 +72,8 @@ class KingKeltnerStrategy(CtaTemplate):
 
     def on_5min_bar(self, bar: BarData):
         """"""
+
+        # 撤单
         for orderid in self.vt_orderids:
             self.cancel_order(orderid)
         self.vt_orderids.clear()

@@ -11,16 +11,23 @@ from vnpy.app.cta_strategy import (
 
 
 class BollChannelStrategy(CtaTemplate):
-    """"""
+    """
+    BollChannelStrategy策略示例
+    """
+
+    """
+    参数设置：
+    定义策略并初始化策略变量，策略参数为策略类的仅有属性，用户可以通过创建新的实例来调用或者改变策略参数。
+    """
 
     author = "用Python的交易员"
 
-    boll_window = 18
-    boll_dev = 3.4
-    cci_window = 10
-    atr_window = 30
+    boll_window = 18    # 布林带计算窗口
+    boll_dev = 3.4      # 布林带宽度
+    cci_window = 10     # cci指标计算窗口
+    atr_window = 30     # atr指标计算窗口
     sl_multiplier = 5.2
-    fixed_size = 1
+    fixed_size = 1      # 固定交易量
 
     boll_up = 0
     boll_down = 0

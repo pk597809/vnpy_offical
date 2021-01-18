@@ -1,4 +1,8 @@
-""""""
+"""
+定义了CTA策略模板（包含信号生成和委托管理）、
+CTA信号（仅负责信号生成）、
+目标仓位算法（仅负责委托管理，适用于拆分巨型委托，降低冲击成本）
+"""
 from abc import ABC
 from copy import copy
 from typing import Any, Callable
@@ -11,7 +15,9 @@ from .base import StopOrder, EngineType
 
 
 class CtaTemplate(ABC):
-    """"""
+    """
+    CTA策略模板提供完整的信号生成和委托管理功能，用户可以基于该模板自行开发策略。
+    """
 
     author = ""
     parameters = []

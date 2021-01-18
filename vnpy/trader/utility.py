@@ -181,6 +181,12 @@ class BarGenerator:
         on_window_bar: Callable = None,
         interval: Interval = Interval.MINUTE
     ):
+        """
+        :param on_bar:  构造一个单位bar之后，调用的函数，一般为on_bar回调函数
+        :param window:  构造一个单位bar之后，还需要构造x单位的bar，x的长度为window
+        :param on_window_bar:构造完x单位的bar之后，调用的函数，一般为on_xminbar回调函数
+        :param interval:合成K线的周期，一个单位的间隔，MINUTE、HOUR、DAILY、WEEKLY、TICK
+        """
         """Constructor"""
         self.bar: BarData = None
         self.on_bar: Callable = on_bar

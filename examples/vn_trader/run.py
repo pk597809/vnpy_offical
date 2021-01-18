@@ -5,6 +5,8 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 
 from vnpy.gateway.ctp import CtpGateway
+
+
 # from vnpy.gateway.ctptest import CtptestGateway
 # from vnpy.gateway.mini import MiniGateway
 # from vnpy.gateway.minitest import MinitestGateway
@@ -133,8 +135,6 @@ def main():
     # main_engine.add_app(PortfolioManagerApp)
     # main_engine.add_app(PaperAccountApp)
 
-
-    
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
 
