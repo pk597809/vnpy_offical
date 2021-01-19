@@ -53,6 +53,8 @@ class TickData(BaseData):
     low_price: float = 0
     pre_close: float = 0
 
+    # bid price 1 买1价
+    # ask price 1 卖1价
     bid_price_1: float = 0
     bid_price_2: float = 0
     bid_price_3: float = 0

@@ -1,4 +1,8 @@
-""""""
+"""
+定义了CTA策略实盘引擎，其中包括：RQData客户端初始化和数据载入、
+策略的初始化和启动、推送Tick订阅行情到策略中、挂撤单操作、
+策略的停止和移除等。
+"""
 
 import importlib
 import os
@@ -156,6 +160,9 @@ class CtaEngine(BaseEngine):
 
         self.check_stop_order(tick)
 
+        # 对引擎策略列表里的每个策略
+        # 收到tick事件后，
+        # 调用策略的on_tick回调函数
         for strategy in strategies:
             if strategy.inited:
                 self.call_strategy_func(strategy, strategy.on_tick, tick)
@@ -164,6 +171,7 @@ class CtaEngine(BaseEngine):
         """"""
         order = event.data
 
+        # 开平转换器
         self.offset_converter.update_order(order)
 
         strategy = self.orderid_strategy_map.get(order.vt_orderid, None)
@@ -176,6 +184,7 @@ class CtaEngine(BaseEngine):
             vt_orderids.remove(order.vt_orderid)
 
         # For server stop order, call strategy on_stop_order function
+        # 停止单触发，调用策略的on_stop_order回调函数
         if order.type == OrderType.STOP:
             so = StopOrder(
                 vt_symbol=order.vt_symbol,
@@ -191,6 +200,7 @@ class CtaEngine(BaseEngine):
             self.call_strategy_func(strategy, strategy.on_stop_order, so)
 
         # Call strategy on_order function
+        # 定单触发，调用策略的on_order回调函数
         self.call_strategy_func(strategy, strategy.on_order, order)
 
     def process_trade_event(self, event: Event):
@@ -229,8 +239,16 @@ class CtaEngine(BaseEngine):
         self.offset_converter.update_position(position)
 
     def check_stop_order(self, tick: TickData):
-        """"""
+        """
+        检查是否解决停止单，触发则发送限价单
+        在vnpy内部，停止单是由引擎判断的，最终发送到交易服务器上的还是限价单
+        该函数在每个tick到达时调用
+        :param tick:
+        :return:
+        """
         for stop_order in list(self.stop_orders.values()):
+
+            # 只处理当前TickData标的对应的停止单
             if stop_order.vt_symbol != tick.vt_symbol:
                 continue
 
@@ -300,6 +318,8 @@ class CtaEngine(BaseEngine):
         lock: bool
     ):
         """
+        向服务器发送定单
+        不管是停止单还是限价单，最终都是调用send_server_order发送给交易服务器的
         Send a new order to server.
         """
         # Create request and send order.
@@ -315,6 +335,7 @@ class CtaEngine(BaseEngine):
         )
 
         # Convert with offset converter
+        # 一笔定单可能会转换成多个定单发送请求
         req_list = self.offset_converter.convert_order_request(original_req, lock)
 
         # Send Orders
@@ -350,6 +371,7 @@ class CtaEngine(BaseEngine):
     ):
         """
         Send a limit order to server.
+        向服务器发送限价单
         """
         return self.send_server_order(
             strategy,
@@ -470,6 +492,9 @@ class CtaEngine(BaseEngine):
         lock: bool
     ):
         """
+            发送定单
+            如果是停止单，判断该合约支不支持停止单，如果支持，向服务器发送定单，如果不支持，则使用本地停止单逻辑
+            如果不是停止单，则发送限价单
         """
         contract = self.main_engine.get_contract(strategy.vt_symbol)
         if not contract:
@@ -490,6 +515,9 @@ class CtaEngine(BaseEngine):
 
     def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
+        取消定单
+        如果是停止单，则取消本地停止单
+        否则，直接向服务器发送定单取消
         """
         if vt_orderid.startswith(STOPORDER_PREFIX):
             self.cancel_local_stop_order(strategy, vt_orderid)
@@ -537,6 +565,7 @@ class CtaEngine(BaseEngine):
         bars = []
 
         # Pass gateway and RQData if use_database set to True
+        # 如果不使用数据库，则使用RQData或者接口获取数据
         if not use_database:
             # Query bars from gateway if available
             contract = self.main_engine.get_contract(vt_symbol)
@@ -555,6 +584,7 @@ class CtaEngine(BaseEngine):
             else:
                 bars = self.query_bar_from_rq(symbol, exchange, interval, start, end)
 
+        # 如果仍然没有查到数据，则通过数据库查询
         if not bars:
             bars = database_manager.load_bar_data(
                 symbol=symbol,
@@ -564,6 +594,7 @@ class CtaEngine(BaseEngine):
                 end=end,
             )
 
+        # 这应该就是在调用推送bar的函数了
         for bar in bars:
             callback(bar)
 
@@ -585,6 +616,7 @@ class CtaEngine(BaseEngine):
             end=end,
         )
 
+        # 推送tick数据
         for tick in ticks:
             callback(tick)
 
@@ -769,6 +801,7 @@ class CtaEngine(BaseEngine):
     def load_strategy_class(self):
         """
         Load strategy class from source code.
+        从CTA策略文件中加载示例策略
         """
         path1 = Path(__file__).parent.joinpath("strategies")
         self.load_strategy_class_from_folder(
@@ -780,6 +813,8 @@ class CtaEngine(BaseEngine):
     def load_strategy_class_from_folder(self, path: Path, module_name: str = ""):
         """
         Load strategy class from certain folder.
+        从用户文件夹下加载自定义策略，
+        策略可以是py,pyd,so格式的
         """
         for dirpath, dirnames, filenames in os.walk(str(path)):
             for filename in filenames:
@@ -902,6 +937,7 @@ class CtaEngine(BaseEngine):
     def put_stop_order_event(self, stop_order: StopOrder):
         """
         Put an event to update stop order status.
+        接下来的put...都是向界面引擎中发送消息，由界面引擎处理
         """
         event = Event(EVENT_CTA_STOPORDER, stop_order)
         self.event_engine.put(event)

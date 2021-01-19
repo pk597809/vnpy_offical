@@ -27,6 +27,8 @@ class AtrRsiStrategy(CtaTemplate):
     rsi_value = 0
     rsi_buy = 0
     rsi_sell = 0
+
+    # 持仓周期的最高点、最低点时
     intra_trade_high = 0
     intra_trade_low = 0
 

@@ -205,6 +205,7 @@ class BarGenerator:
         """
         Update new tick data into generator.
         """
+        # 判断是否走完了一分钟
         new_minute = False
 
         # Filter tick data with 0 last price
@@ -229,6 +230,7 @@ class BarGenerator:
             new_minute = True
 
         if new_minute:
+            # 初始化bar
             self.bar = BarData(
                 symbol=tick.symbol,
                 exchange=tick.exchange,
