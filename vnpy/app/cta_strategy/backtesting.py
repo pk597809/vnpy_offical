@@ -39,6 +39,7 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 class OptimizationSetting:
     """
     Setting for runnning optimization.
+    构造参数搜索空间
     """
 
     def __init__(self):
@@ -49,7 +50,14 @@ class OptimizationSetting:
     def add_parameter(
         self, name: str, start: float, end: float = None, step: float = None
     ):
-        """"""
+        """
+        每一个参数根据start和end，由step组成参数值的列表
+        :param name:
+        :param start:
+        :param end:
+        :param step:
+        :return:
+        """
         if not end and not step:
             self.params[name] = [start]
             return
@@ -76,7 +84,10 @@ class OptimizationSetting:
         self.target_name = target_name
 
     def generate_setting(self):
-        """"""
+        """
+        构造参数搜索的迪卡尔集
+        :return:
+        """
         keys = self.params.keys()
         values = self.params.values()
         products = list(product(*values))
@@ -89,7 +100,10 @@ class OptimizationSetting:
         return settings
 
     def generate_setting_ga(self):
-        """"""
+        """
+        对于每个参数对应的列表转换成tuple，便于后续计算
+        :return:
+        """
         settings_ga = []
         settings = self.generate_setting()
         for d in settings:
@@ -188,19 +202,19 @@ class BacktestingEngine:
         """"""
         self.mode = mode
         self.vt_symbol = vt_symbol
-        self.interval = Interval(interval)
-        self.rate = rate
-        self.slippage = slippage
-        self.size = size
-        self.pricetick = pricetick
+        self.interval = Interval(interval)  # K线周期
+        self.rate = rate                    # 手续费率
+        self.slippage = slippage            # 交易滑点
+        self.size = size                    # 合约乘数
+        self.pricetick = pricetick          # 价格跳动
         self.start = start
 
         self.symbol, exchange_str = self.vt_symbol.split(".")
         self.exchange = Exchange(exchange_str)
 
-        self.capital = capital
+        self.capital = capital              # 回测资金
         self.end = end
-        self.mode = mode
+        self.mode = mode                    # 合约模式
         self.inverse = inverse
         self.risk_free = risk_free
 
@@ -288,6 +302,8 @@ class BacktestingEngine:
             self.datetime = data.datetime
 
             try:
+                # 回放，取得一条bar或tick，调用处理函数
+
                 self.callback(data)
             except Exception:
                 self.output("触发异常，回测终止")
@@ -310,6 +326,7 @@ class BacktestingEngine:
         total_size = len(backtesting_data)
         batch_size = int(total_size / 10)
 
+        # 分成10份运行，对每份里的每个bar进行回放
         for ix, i in enumerate(range(0, total_size, batch_size)):
             batch_data = backtesting_data[i: i + batch_size]
             for data in batch_data:
@@ -381,31 +398,31 @@ class BacktestingEngine:
         # Check for init DataFrame
         if df is None:
             # Set all statistics to 0 if no trade.
-            start_date = ""
-            end_date = ""
-            total_days = 0
-            profit_days = 0
-            loss_days = 0
-            end_balance = 0
-            max_drawdown = 0
-            max_ddpercent = 0
-            max_drawdown_duration = 0
-            total_net_pnl = 0
-            daily_net_pnl = 0
-            total_commission = 0
-            daily_commission = 0
-            total_slippage = 0
-            daily_slippage = 0
-            total_turnover = 0
-            daily_turnover = 0
-            total_trade_count = 0
-            daily_trade_count = 0
-            total_return = 0
-            annual_return = 0
-            daily_return = 0
-            return_std = 0
-            sharpe_ratio = 0
-            return_drawdown_ratio = 0
+            start_date = ""             # 开始日期
+            end_date = ""               # 结束日期
+            total_days = 0              # 总交易日
+            profit_days = 0             # 盈利交易日
+            loss_days = 0               # 损失交易日
+            end_balance = 0             # 结束资金
+            max_drawdown = 0            # 最大回撤
+            max_ddpercent = 0           # 最大回撤百分比
+            max_drawdown_duration = 0   # 最大回撤区间
+            total_net_pnl = 0           # 总净盈亏  profit and loss : p & l
+            daily_net_pnl = 0           # 日净盈亏
+            total_commission = 0        # 部手续费
+            daily_commission = 0        # 每日手续费
+            total_slippage = 0          # 总滑点
+            daily_slippage = 0          # 日滑点
+            total_turnover = 0          # 总成交额
+            daily_turnover = 0          # 日成交额
+            total_trade_count = 0       # 总成交笔数
+            daily_trade_count = 0       # 日成交笔数
+            total_return = 0            # 总收益率
+            annual_return = 0           # 年化收益率
+            daily_return = 0            # 日收益率
+            return_std = 0              # 收益率标准差
+            sharpe_ratio = 0            # 夏普比率
+            return_drawdown_ratio = 0   # 收益回撤比
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
