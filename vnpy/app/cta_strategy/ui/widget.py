@@ -1,3 +1,7 @@
+"""
+主要是VnTrader的CTA策略模块的几大组件的内容
+"""
+
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtGui, QtWidgets

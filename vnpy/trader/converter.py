@@ -95,7 +95,10 @@ class PositionHolding:
     """"""
 
     def __init__(self, contract: ContractData):
-        """"""
+        """
+        跟踪当前交易合约的持仓
+        :param contract:
+        """
         self.vt_symbol: str = contract.vt_symbol
         self.exchange: Exchange = contract.exchange
 
@@ -146,7 +149,11 @@ class PositionHolding:
         self.update_order(order)
 
     def update_trade(self, trade: TradeData) -> None:
-        """"""
+        """
+        有成交了，实时地计算持仓情况，而不用待引擎3秒查询结果
+        :param trade:
+        :return:
+        """
         if trade.direction == Direction.LONG:
             if trade.offset == Offset.OPEN:
                 self.long_td += trade.volume

@@ -216,7 +216,9 @@ class XtpGateway(BaseGateway):
 
 
 class XtpMdApi(MdApi):
-
+    """
+    市场行情API
+    """
     def __init__(self, gateway: XtpGateway):
         """"""
         super().__init__()
@@ -473,7 +475,9 @@ class XtpMdApi(MdApi):
 
 
 class XtpTdApi(TdApi):
-
+    """
+    交易API
+    """
     def __init__(self, gateway: XtpGateway):
         """"""
         super().__init__()
