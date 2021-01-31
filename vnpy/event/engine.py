@@ -16,6 +16,7 @@ class Event:
     Event object consists of a type string which is used
     by event engine for distributing event, and a data
     object which contains the real data.
+    事件对象由事件引擎用于分发事件的类型字符串和包含实际数据的数据对象组成。
     """
 
     def __init__(self, type: str, data: Any = None):
@@ -32,9 +33,10 @@ class EventEngine:
     """
     Event engine distributes event object based on its type
     to those handlers registered.
-
+    事件引擎根据事件对象的类型将事件对象分配给已注册的那些处理程序
     It also generates timer event by every interval seconds,
     which can be used for timing purpose.
+    它还每隔几秒生成一次计时器事件，可将其用于计时目的。
     """
 
     def __init__(self, interval: int = 1):
@@ -65,9 +67,11 @@ class EventEngine:
         """
         First ditribute event to those handlers registered listening
         to this type.
+        首先将事件分发给已注册侦听此类型的那些处理程序
 
         Then distrubute event to those general handlers which listens
         to all types.
+        将事件分发给那些处理所有类型的通常处理程序。
         """
         if event.type in self._handlers:
             [handler(event) for handler in self._handlers[event.type]]
@@ -110,6 +114,7 @@ class EventEngine:
         """
         Register a new handler function for a specific event type. Every
         function can only be registered once for each event type.
+        为特定事件类型注册新的处理函数。 对于每种事件类型，每个函数只能注册一次。
         """
         handler_list = self._handlers[type]
         if handler not in handler_list:
