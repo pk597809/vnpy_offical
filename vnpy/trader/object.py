@@ -34,6 +34,9 @@ class TickData(BaseData):
          *市场最后交易
          *订单快照
          *盘中市场统计。
+         symbol_name_map[contract.vt_symbol] = contract.name
+
+         tick.name = symbol_name_map.get(tick.vt_symbol, tick.symbol)
     """
 
     symbol: str
