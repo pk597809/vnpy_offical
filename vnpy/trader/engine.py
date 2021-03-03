@@ -50,24 +50,51 @@ class MainEngine:
 
     def __init__(self, event_engine: EventEngine = None):
         """"""
+        # 无论如何，保证总会有事件引擎对象
         if event_engine:
             self.event_engine: EventEngine = event_engine
         else:
             self.event_engine = EventEngine()
+
+        # 启动事件引擎，主引擎在创建的时候，事件引擎便启动了
         self.event_engine.start()
 
+        # 交易接口字典，无脑推断通过vntrader的UI界面里添加的交易接口都会存在这里
         self.gateways: Dict[str, BaseGateway] = {}
+
+        # 维护其他应用的引擎
+        # 注意app也会创建应用引擎，在创建的过程中也会保存到engines里
         self.engines: Dict[str, BaseEngine] = {}
+
+        # 存加载的应用实例， 在创建的过程中，应用类都会被实例化
         self.apps: Dict[str, BaseApp] = {}
+
+        # 保存接口支持的交易所
+        # 在add_gateway的时候自动添加交易接口支持的交易所
         self.exchanges: List[Exchange] = []
 
         os.chdir(TRADER_DIR)    # Change working directory
+
+        # 初始化服务引擎包括日志引擎、订单路由引擎、邮件引擎
         self.init_engines()     # Initialize function engines
 
     def add_engine(self, engine_class: Any) -> "BaseEngine":
         """
         Add function engine.
+        这种实现机制真神奇
+        传入的是engine_class，就是一个类
+        在函数实现里创建这个类，这种设计可以使得不会出现engines字典内有同一个引擎的情况？
+        BaseEngine的构造函数可以看出，一个引擎在创建的过程中，会传入主引擎、事件引擎、引擎名，这可真绕
+        这样在BaseEngine所派生的引擎里，就可以调用主引擎提供的接口
+        class BaseEngine(ABC):
+             def __init__(
+                self,
+                main_engine: MainEngine,
+                event_engine: EventEngine,
+                engine_name: str,
+            ):
         """
+
         engine = engine_class(self, self.event_engine)
         self.engines[engine.engine_name] = engine
         return engine
@@ -76,6 +103,7 @@ class MainEngine:
         """
         Add gateway.
         """
+        # 引擎创建与添加，同样传入的也是一个类，在函数实现时创建
         gateway = gateway_class(self.event_engine)
         self.gateways[gateway.gateway_name] = gateway
 
@@ -90,9 +118,13 @@ class MainEngine:
         """
         Add app.
         """
+        # 应用app创建与添加
+        # app类里只是一些资源索引
         app = app_class()
         self.apps[app.app_name] = app
 
+        # 将app的引擎添加进引擎字典里
+        # 每个app的实现都会有引擎
         engine = self.add_engine(app.engine_class)
         return engine
 
