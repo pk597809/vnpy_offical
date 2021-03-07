@@ -17,6 +17,10 @@ class Direction(Enum):
 class Offset(Enum):
     """
     Offset of order/trade.
+    平今 就是平掉今天的仓单，平 就是平掉历史仓单
+    中国只有上海期货交易所才严格区分“平仓”和”平今“，当天建的仓单只能用“平今”指令才能平掉
+    郑州和大连的对此不做区分
+    大商所的平今单不收手续费，鼓励作短线
     """
     NONE = ""
     OPEN = "开"

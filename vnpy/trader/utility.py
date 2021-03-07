@@ -211,27 +211,33 @@ class BarGenerator:
         new_minute = False
 
         # Filter tick data with 0 last price
+        # 最新成交价为0
         if not tick.last_price:
             return
 
         # Filter tick data with older timestamp
+        # 过滤掉收到的过去的tick
         if self.last_tick and tick.datetime < self.last_tick.datetime:
             return
 
         if not self.bar:
+            # self.bar为None，那收到的tick就是新的一分钟的tick
             new_minute = True
         elif (
             (self.bar.datetime.minute != tick.datetime.minute)
             or (self.bar.datetime.hour != tick.datetime.hour)
         ):
+            # self.bar不为None,判断是否到了下一分钟，如果到了下一分钟，就给self.bar推出去。
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
             )
+            # 已经过了当着这一分钟了，把已经合成的bar推出去
             self.on_bar(self.bar)
 
             new_minute = True
 
         if new_minute:
+            # 新的一分钟，新生成一个bar对象
             # 初始化bar
             self.bar = BarData(
                 symbol=tick.symbol,
@@ -246,6 +252,7 @@ class BarGenerator:
                 open_interest=tick.open_interest
             )
         else:
+            # 将当前tick的信息更新到bar里
             self.bar.high_price = max(self.bar.high_price, tick.last_price)
             if tick.high_price > self.last_tick.high_price:
                 self.bar.high_price = max(self.bar.high_price, tick.high_price)
@@ -259,6 +266,7 @@ class BarGenerator:
             self.bar.datetime = tick.datetime
 
         if self.last_tick:
+            # 当前品种、全天交易到当前tick时的成交量，而不是最新的一笔tick的成交量
             volume_change = tick.volume - self.last_tick.volume
             self.bar.volume += max(volume_change, 0)
 

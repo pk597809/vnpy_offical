@@ -308,12 +308,14 @@ class LogEngine(BaseEngine):
 
         self.add_null_handler()
 
+        # 根据配置文件设置日志的输出方式
         if SETTINGS["log.console"]:
             self.add_console_handler()
 
         if SETTINGS["log.file"]:
             self.add_file_handler()
 
+        # 注册主引擎日志事件的监控函数
         self.register_event()
 
     def add_null_handler(self) -> None:
@@ -548,7 +550,7 @@ class EmailEngine(BaseEngine):
         self.main_engine.send_email = self.send_email
 
     def send_email(self, subject: str, content: str, receiver: str = "") -> None:
-        """"""
+        """EmailEngine不是总是运行着的，只有在第一次发送邮件的时候，引擎线程启动"""
         # Start email engine when sending first email.
         if not self.active:
             self.start()
