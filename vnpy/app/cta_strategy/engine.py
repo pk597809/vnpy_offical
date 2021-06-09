@@ -67,6 +67,8 @@ STOP_STATUS_MAP = {
     Status.REJECTED: StopOrderStatus.CANCELLED
 }
 
+LOCAL_TZ = get_localzone()
+
 
 class CtaEngine(BaseEngine):
     """"""
@@ -194,6 +196,7 @@ class CtaEngine(BaseEngine):
                 volume=order.volume,
                 stop_orderid=order.vt_orderid,
                 strategy_name=strategy.strategy_name,
+                datetime=order.datetime,
                 status=STOP_STATUS_MAP[order.status],
                 vt_orderids=[order.vt_orderid],
             )
@@ -285,7 +288,8 @@ class CtaEngine(BaseEngine):
                     stop_order.offset,
                     price,
                     stop_order.volume,
-                    stop_order.lock
+                    stop_order.lock,
+                    stop_order.net
                 )
 
                 # Update stop order status if placed successfully
@@ -315,7 +319,8 @@ class CtaEngine(BaseEngine):
         price: float,
         volume: float,
         type: OrderType,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """
         向服务器发送定单
@@ -336,14 +341,13 @@ class CtaEngine(BaseEngine):
 
         # Convert with offset converter
         # 一笔定单可能会转换成多个定单发送请求
-        req_list = self.offset_converter.convert_order_request(original_req, lock)
+        req_list = self.offset_converter.convert_order_request(original_req, lock, net)
 
         # Send Orders
         vt_orderids = []
 
         for req in req_list:
-            vt_orderid = self.main_engine.send_order(
-                req, contract.gateway_name)
+            vt_orderid = self.main_engine.send_order(req, contract.gateway_name)
 
             # Check if sending order successful
             if not vt_orderid:
@@ -367,7 +371,8 @@ class CtaEngine(BaseEngine):
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """
         Send a limit order to server.
@@ -381,7 +386,8 @@ class CtaEngine(BaseEngine):
             price,
             volume,
             OrderType.LIMIT,
-            lock
+            lock,
+            net
         )
 
     def send_server_stop_order(
@@ -392,7 +398,8 @@ class CtaEngine(BaseEngine):
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """
         Send a stop order to server.
@@ -408,7 +415,8 @@ class CtaEngine(BaseEngine):
             price,
             volume,
             OrderType.STOP,
-            lock
+            lock,
+            net
         )
 
     def send_local_stop_order(
@@ -418,7 +426,8 @@ class CtaEngine(BaseEngine):
         offset: Offset,
         price: float,
         volume: float,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """
         Create a new local stop order.
@@ -434,7 +443,9 @@ class CtaEngine(BaseEngine):
             volume=volume,
             stop_orderid=stop_orderid,
             strategy_name=strategy.strategy_name,
-            lock=lock
+            datetime=datetime.now(LOCAL_TZ),
+            lock=lock,
+            net=net
         )
 
         self.stop_orders[stop_orderid] = stop_order
@@ -489,7 +500,8 @@ class CtaEngine(BaseEngine):
         price: float,
         volume: float,
         stop: bool,
-        lock: bool
+        lock: bool,
+        net: bool
     ):
         """
             发送定单
@@ -507,11 +519,17 @@ class CtaEngine(BaseEngine):
 
         if stop:
             if contract.stop_supported:
-                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
+                return self.send_server_stop_order(
+                    strategy, contract, direction, offset, price, volume, lock, net
+                )
             else:
-                return self.send_local_stop_order(strategy, direction, offset, price, volume, lock)
+                return self.send_local_stop_order(
+                    strategy, direction, offset, price, volume, lock, net
+                )
         else:
-            return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock)
+            return self.send_limit_order(
+                strategy, contract, direction, offset, price, volume, lock, net
+            )
 
     def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
@@ -560,7 +578,7 @@ class CtaEngine(BaseEngine):
     ):
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now(get_localzone())
+        end = datetime.now(LOCAL_TZ)
         start = end - timedelta(days)
         bars = []
 
@@ -606,7 +624,7 @@ class CtaEngine(BaseEngine):
     ):
         """"""
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        end = datetime.now()
+        end = datetime.now(LOCAL_TZ)
         start = end - timedelta(days)
 
         ticks = database_manager.load_tick_data(
@@ -796,6 +814,7 @@ class CtaEngine(BaseEngine):
         # Remove from strategies
         self.strategies.pop(strategy_name)
 
+        self.write_log(f"策略{strategy.strategy_name}移除移除成功")
         return True
 
     def load_strategy_class(self):
@@ -955,7 +974,7 @@ class CtaEngine(BaseEngine):
         Create cta engine log event.
         """
         if strategy:
-            msg = f"{strategy.strategy_name}: {msg}"
+            msg = f"[{strategy.strategy_name}]  {msg}"
 
         log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(type=EVENT_CTA_LOG, data=log)
