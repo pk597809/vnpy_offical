@@ -49,8 +49,8 @@ from vnpy.gateway.ctp import CtpGateway
 # from vnpy.gateway.xgj import XgjGateway
 # from vnpy.gateway.alpaca import AlpacaGateway
 
-# from vnpy.app.cta_strategy import CtaStrategyApp
-# from vnpy.app.cta_backtester import CtaBacktesterApp
+from vnpy.app.cta_strategy import CtaStrategyApp
+from vnpy.app.cta_backtester import CtaBacktesterApp
 # from vnpy.app.spread_trading import SpreadTradingApp
 # from vnpy.app.algo_trading import AlgoTradingApp
 # from vnpy.app.option_master import OptionMasterApp
@@ -118,8 +118,8 @@ def main():
     # main_engine.add_gateway(XgjGateway)       
     # main_engine.add_gateway(AlpacaGateway)
 
-    # main_engine.add_app(CtaStrategyApp)
-    # main_engine.add_app(CtaBacktesterApp)
+    main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
     # main_engine.add_app(SpreadTradingApp)
     # main_engine.add_app(AlgoTradingApp)
     # main_engine.add_app(OptionMasterApp)
