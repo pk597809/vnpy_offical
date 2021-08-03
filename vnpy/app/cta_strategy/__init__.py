@@ -4,3 +4,7 @@ import vnpy_ctastrategy
 
 
 sys.modules[__name__] = vnpy_ctastrategy
+
+
+class CtaStrategyApp:
+    pass

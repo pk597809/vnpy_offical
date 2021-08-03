@@ -134,6 +134,12 @@ class ChartWidget(pg.PlotWidget):
         """
         return self._plots.get(plot_name, None)
 
+    def get_item(self,item_name:str):   # hxxjava add
+        """
+        Get chart item by item's name.
+        """
+        return self._items.get(item_name,None)
+
     def get_all_plots(self) -> List[pg.PlotItem]:
         """
         Get all plot objects.
