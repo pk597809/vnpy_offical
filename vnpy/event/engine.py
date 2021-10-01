@@ -65,11 +65,11 @@ class EventEngine:
 
     def _process(self, event: Event) -> None:
         """
-        First ditribute event to those handlers registered listening
+        First distribute event to those handlers registered listening
         to this type.
         首先将事件分发给已注册侦听此类型的那些处理程序
 
-        Then distrubute event to those general handlers which listens
+        Then distribute event to those general handlers which listens
         to all types.
         将事件分发给那些处理所有类型的通常处理程序。
         """
